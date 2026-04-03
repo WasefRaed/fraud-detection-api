@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Fraud Detection</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0a0a0f;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .card {
+      background: #13131a;
+      border: 1px solid #1e1e2e;
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 500px;
+    }
+    h1 { font-size: 24px; margin-bottom: 6px; }
+    p.sub { color: #64748b; margin-bottom: 28px; font-size: 14px; }
+    label { display: block; font-size: 13px; color: #94a3b8; margin-bottom: 4px; }
+    input {
+      width: 100%; padding: 10px 14px;
+      background: #1e1e2e; color: #e2e8f0;
+      border: 1px solid #2d2d3d; border-radius: 8px;
+      font-size: 15px; margin-bottom: 18px;
+    }
+    input:focus { outline: none; border-color: #3b82f6; }
+    button {
+      width: 100%; padding: 13px;
+      background: #2563eb; color: white;
+      border: none; border-radius: 8px;
+      font-size: 16px; cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover { background: #1d4ed8; }
+    button:disabled { background: #334155; cursor: not-allowed; }
+    #result {
+      margin-top: 24px;
+      padding: 20px;
+      border-radius: 10px;
+      display: none;
+      border: 1px solid transparent;
+    }
+    .fraud  { background: #1c0a0a; border-color: #7f1d1d; }
+    .legit  { background: #061210; border-color: #14532d; }
+    #verdict { font-size: 20px; font-weight: bold; margin-bottom: 12px; }
+    .row { display: flex; justify-content: space-between; margin: 6px 0; font-size: 14px; }
+    .row span:last-child { font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>💳 Fraud Detection</h1>
+    <p class="sub">Enter transaction details to check for fraud</p>
+
+    <label>Transaction Amount (USD)</label>
+    <input type="number" id="amount" placeholder="e.g. 150.00" min="0" step="0.01" />
+
+    <label>Time (seconds since start)</label>
+    <input type="number" id="time" placeholder="e.g. 43200" min="0" />
+
+    <button id="btn" onclick="check()">🔍 Analyze Transaction</button>
+
+    <div id="result">
+      <div id="verdict"></div>
+      <div class="row"><span>Fraud Probability</span><span id="prob"></span></div>
+      <div class="row"><span>Risk Level</span><span id="risk"></span></div>
+      <div class="row"><span>Action</span><span id="action"></span></div>
+    </div>
+  </div>
+
+  <script>
+    async function check() {
+      const amount = parseFloat(document.getElementById('amount').value) || 100;
+      const time   = parseFloat(document.getElementById('time').value)   || 12345;
+      const btn    = document.getElementById('btn');
+
+      btn.disabled = true;
+      btn.textContent = 'Analyzing...';
+
+      // V1–V28: random demo values (replace with real values in production)
+      const v = {};
+      for (let i = 1; i <= 28; i++) v[`V${i}`] = +(Math.random() * 4 - 2).toFixed(4);
+
+      try {
+        const res  = await fetch('/predict', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ Time: time, Amount: amount, ...v })
+        });
+        const data = await res.json();
+
+        const div = document.getElementById('result');
+        div.style.display = 'block';
+        div.className = data.is_fraud ? 'fraud' : 'legit';
+
+        document.getElementById('verdict').textContent =
+          data.is_fraud ? '🚨 Fraud Detected' : '✅ Legitimate Transaction';
+        document.getElementById('prob').textContent   = data.fraud_probability + '%';
+        document.getElementById('risk').textContent   = data.risk_level;
+        document.getElementById('action').textContent = data.recommendation;
+      } catch(e) {
+        alert('Error connecting to server. Is it running?');
+      }
+
+      btn.disabled = false;
+      btn.textContent = '🔍 Analyze Transaction';
+    }
+  </script>
+</body>
+</html>
