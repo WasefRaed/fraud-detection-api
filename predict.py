@@ -7,6 +7,7 @@ class FraudDetectionPipeline:
 
     def __init__(self):
         self.model     = joblib.load('models/model.pkl')
+        self.explainer = joblib.load('models/explainer.pkl')
         self.scaler_amount = joblib.load('models/scaler_amount.pkl')
         self.scaler_time   = joblib.load('models/scaler_time.pkl')
 
@@ -53,11 +54,31 @@ class FraudDetectionPipeline:
         else:
             risk = 'Very High'
 
+        # SHAP explanation
+        shap_values = self.explainer.shap_values(X)
+        shap_array  = shap_values[0] if isinstance(shap_values, list) else shap_values[0]
+        
+        shap_pairs = sorted(
+            zip(list(X.columns), shap_array),
+            key=lambda x: abs(x[1]),
+            reverse=True
+        )[:5]
+        
+        top_features = [
+            {
+                "feature":   name,
+                "impact":    round(float(val), 4),
+                "direction": "increases fraud risk" if val > 0 else "decreases fraud risk"
+            }
+            for name, val in shap_pairs
+        ]
+        
         return {
             'is_fraud':          flag,
             'fraud_probability': round(prob * 100, 2),
             'risk_level':        risk,
-            'recommendation':    'BLOCK TRANSACTION' if flag else 'ALLOW TRANSACTION'
+            'recommendation':    'BLOCK TRANSACTION' if flag else 'ALLOW TRANSACTION',
+            'top_reasons':       top_features
         }
 
 

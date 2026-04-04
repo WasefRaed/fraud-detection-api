@@ -3,6 +3,7 @@ import numpy as np
 import joblib
 import pickle
 import os
+import shap
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import RobustScaler
 from sklearn.ensemble import RandomForestClassifier
@@ -84,6 +85,10 @@ os.makedirs('models', exist_ok=True)
 joblib.dump(best_model, 'models/model.pkl')
 joblib.dump(scaler_amount, 'models/scaler_amount.pkl')
 joblib.dump(scaler_time,   'models/scaler_time.pkl')
+best_model.get_booster().set_param({'base_score': 0.5})
+explainer = shap.TreeExplainer(best_model)
+joblib.dump(explainer, 'models/explainer.pkl')
+print("✓ SHAP explainer saved")
 
 with open('models/features.pkl', 'wb') as f:
     pickle.dump(selected_features, f)

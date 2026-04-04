@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/user/fraud-detection-api/mlruns/993859443815219098/c7c86b0923b44c98b68b45d41272dd97/artifacts
+end_time: 1775263771329
+entry_point_name: ''
+experiment_id: '993859443815219098'
+lifecycle_stage: active
+run_id: c7c86b0923b44c98b68b45d41272dd97
+run_name: sedate-squirrel-617
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1775263771257
+status: 3
+tags: []
+user_id: user

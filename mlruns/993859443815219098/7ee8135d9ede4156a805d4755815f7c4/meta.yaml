@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/user/fraud-detection-api/mlruns/993859443815219098/7ee8135d9ede4156a805d4755815f7c4/artifacts
+end_time: 1775263722500
+entry_point_name: ''
+experiment_id: '993859443815219098'
+lifecycle_stage: active
+run_id: 7ee8135d9ede4156a805d4755815f7c4
+run_name: beautiful-fawn-10
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1775263722412
+status: 3
+tags: []
+user_id: user

@@ -1,8 +1,14 @@
+import time
+import mlflow
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from predict import pipeline
+
+# ── MLflow setup ──────────────────────────────────────────────
+mlflow.set_tracking_uri("mlruns")
+mlflow.set_experiment("fraud-detection")
 
 app = FastAPI(title="Fraud Detection API")
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
@@ -25,4 +31,18 @@ def home():
 
 @app.post("/predict")
 def predict(tx: Transaction):
-    return pipeline.predict(tx.dict())
+    start = time.time()
+    result = pipeline.predict(tx.dict())
+    duration = round(time.time() - start, 4)
+
+    # Log every prediction to MLflow
+    with mlflow.start_run():
+        mlflow.log_param("amount",      tx.Amount)
+        mlflow.log_param("time",        tx.Time)
+        mlflow.log_metric("fraud_probability", result["fraud_probability"])
+        mlflow.log_metric("latency_seconds",   duration)
+        mlflow.log_param("is_fraud",    result["is_fraud"])
+        mlflow.log_param("risk_level",  result["risk_level"])
+
+    result["latency_seconds"] = duration
+    return result

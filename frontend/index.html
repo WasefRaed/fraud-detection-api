@@ -2,83 +2,171 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Fraud Detection</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fraud Detection System</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #0a0a0f;
+      background: #080810;
       color: #e2e8f0;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 30px 20px;
     }
-    .card {
-      background: #13131a;
-      border: 1px solid #1e1e2e;
-      border-radius: 16px;
-      padding: 40px;
+
+    .container {
       width: 100%;
-      max-width: 500px;
+      max-width: 560px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
-    h1 { font-size: 24px; margin-bottom: 6px; }
-    p.sub { color: #64748b; margin-bottom: 28px; font-size: 14px; }
-    label { display: block; font-size: 13px; color: #94a3b8; margin-bottom: 4px; }
+
+    .header { text-align: center; }
+    .header h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+    .header p  { color: #64748b; font-size: 14px; margin-top: 6px; }
+
+    .card {
+      background: #0f0f1a;
+      border: 1px solid #1e1e30;
+      border-radius: 16px;
+      padding: 28px;
+    }
+
+    .card h2 { font-size: 14px; color: #64748b; margin-bottom: 18px; text-transform: uppercase; letter-spacing: 1px; }
+
+    .field { margin-bottom: 16px; }
+    label  { display: block; font-size: 13px; color: #94a3b8; margin-bottom: 6px; }
+
     input {
       width: 100%; padding: 10px 14px;
-      background: #1e1e2e; color: #e2e8f0;
-      border: 1px solid #2d2d3d; border-radius: 8px;
-      font-size: 15px; margin-bottom: 18px;
+      background: #1a1a2e; color: #e2e8f0;
+      border: 1px solid #2a2a40; border-radius: 8px;
+      font-size: 15px; transition: border 0.2s;
     }
     input:focus { outline: none; border-color: #3b82f6; }
+
+    .note { font-size: 12px; color: #475569; margin-top: -10px; margin-bottom: 16px; }
+
     button {
       width: 100%; padding: 13px;
       background: #2563eb; color: white;
-      border: none; border-radius: 8px;
-      font-size: 16px; cursor: pointer;
-      transition: background 0.2s;
+      border: none; border-radius: 10px;
+      font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: background 0.2s;
+      letter-spacing: 0.3px;
     }
-    button:hover { background: #1d4ed8; }
-    button:disabled { background: #334155; cursor: not-allowed; }
-    #result {
-      margin-top: 24px;
-      padding: 20px;
+    button:hover    { background: #1d4ed8; }
+    button:disabled { background: #1e293b; color: #475569; cursor: not-allowed; }
+
+    /* Result card */
+    #result { display: none; }
+
+    .verdict {
+      font-size: 22px; font-weight: 700;
+      margin-bottom: 18px; padding-bottom: 16px;
+      border-bottom: 1px solid #1e1e30;
+    }
+
+    .fraud-card  { border-color: #7f1d1d; background: #0d0404; }
+    .legit-card  { border-color: #14532d; background: #030d06; }
+    .fraud-text  { color: #f87171; }
+    .legit-text  { color: #4ade80; }
+
+    .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+
+    .metric {
+      background: #0f0f1a;
+      border: 1px solid #1e1e30;
       border-radius: 10px;
-      display: none;
-      border: 1px solid transparent;
+      padding: 14px;
     }
-    .fraud  { background: #1c0a0a; border-color: #7f1d1d; }
-    .legit  { background: #061210; border-color: #14532d; }
-    #verdict { font-size: 20px; font-weight: bold; margin-bottom: 12px; }
-    .row { display: flex; justify-content: space-between; margin: 6px 0; font-size: 14px; }
-    .row span:last-child { font-weight: 600; }
+    .metric .label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+    .metric .value { font-size: 20px; font-weight: 700; }
+
+    /* SHAP bar chart */
+    .shap-title { font-size: 13px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+
+    .shap-row { margin-bottom: 12px; }
+    .shap-label {
+      display: flex; justify-content: space-between;
+      font-size: 13px; margin-bottom: 5px;
+    }
+    .shap-label .fname  { color: #cbd5e1; font-weight: 600; }
+    .shap-label .fvalue { color: #64748b; font-size: 12px; }
+
+    .bar-bg {
+      height: 8px; background: #1e1e30;
+      border-radius: 4px; overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%; border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+    .bar-risk   { background: #ef4444; }
+    .bar-safe   { background: #22c55e; }
+
+    .latency { text-align: right; font-size: 12px; color: #334155; margin-top: 16px; }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>💳 Fraud Detection</h1>
-    <p class="sub">Enter transaction details to check for fraud</p>
+  <div class="container">
 
-    <label>Transaction Amount (USD)</label>
-    <input type="number" id="amount" placeholder="e.g. 150.00" min="0" step="0.01" />
-
-    <label>Time (seconds since start)</label>
-    <input type="number" id="time" placeholder="e.g. 43200" min="0" />
-
-    <button id="btn" onclick="check()">🔍 Analyze Transaction</button>
-
-    <div id="result">
-      <div id="verdict"></div>
-      <div class="row"><span>Fraud Probability</span><span id="prob"></span></div>
-      <div class="row"><span>Risk Level</span><span id="risk"></span></div>
-      <div class="row"><span>Action</span><span id="action"></span></div>
+    <div class="header">
+      <h1>💳 Fraud Detection System</h1>
+      <p>AI-powered transaction risk analysis with explainability</p>
     </div>
+
+    <div class="card">
+      <h2>Transaction Details</h2>
+
+      <div class="field">
+        <label>Transaction Amount (USD)</label>
+        <input type="number" id="amount" placeholder="e.g. 150.00" min="0" step="0.01" />
+      </div>
+
+      <div class="field">
+        <label>Time (seconds since first transaction)</label>
+        <input type="number" id="time" placeholder="e.g. 43200" min="0" />
+      </div>
+
+      <p class="note">V1–V28 features are auto-generated for demo purposes.</p>
+
+      <button id="btn" onclick="analyze()">🔍 Analyze Transaction</button>
+    </div>
+
+    <div class="card" id="result">
+      <div class="verdict" id="verdict"></div>
+
+      <div class="metrics">
+        <div class="metric">
+          <div class="label">Fraud Probability</div>
+          <div class="value" id="prob"></div>
+        </div>
+        <div class="metric">
+          <div class="label">Risk Level</div>
+          <div class="value" id="risk"></div>
+        </div>
+        <div class="metric" style="grid-column: span 2;">
+          <div class="label">Recommendation</div>
+          <div class="value" style="font-size:16px;" id="action"></div>
+        </div>
+      </div>
+
+      <div class="shap-title">Top Risk Factors (SHAP)</div>
+      <div id="shap-bars"></div>
+
+      <div class="latency" id="latency"></div>
+    </div>
+
   </div>
 
   <script>
-    async function check() {
+    async function analyze() {
       const amount = parseFloat(document.getElementById('amount').value) || 100;
       const time   = parseFloat(document.getElementById('time').value)   || 12345;
       const btn    = document.getElementById('btn');
@@ -86,27 +174,51 @@
       btn.disabled = true;
       btn.textContent = 'Analyzing...';
 
-      // V1–V28: random demo values (replace with real values in production)
       const v = {};
       for (let i = 1; i <= 28; i++) v[`V${i}`] = +(Math.random() * 4 - 2).toFixed(4);
 
       try {
         const res  = await fetch('/predict', {
-          method:  'POST',
+          method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ Time: time, Amount: amount, ...v })
+          body: JSON.stringify({ Time: time, Amount: amount, ...v })
         });
-        const data = await res.json();
+        const d = await res.json();
 
-        const div = document.getElementById('result');
-        div.style.display = 'block';
-        div.className = data.is_fraud ? 'fraud' : 'legit';
+        // Result card
+        const card = document.getElementById('result');
+        card.style.display = 'block';
+        card.className = 'card ' + (d.is_fraud ? 'fraud-card' : 'legit-card');
 
-        document.getElementById('verdict').textContent =
-          data.is_fraud ? '🚨 Fraud Detected' : '✅ Legitimate Transaction';
-        document.getElementById('prob').textContent   = data.fraud_probability + '%';
-        document.getElementById('risk').textContent   = data.risk_level;
-        document.getElementById('action').textContent = data.recommendation;
+        const cls = d.is_fraud ? 'fraud-text' : 'legit-text';
+        document.getElementById('verdict').innerHTML =
+          `<span class="${cls}">${d.is_fraud ? '🚨 Fraud Detected' : '✅ Legitimate Transaction'}</span>`;
+
+        document.getElementById('prob').textContent   = d.fraud_probability + '%';
+        document.getElementById('risk').textContent   = d.risk_level;
+        document.getElementById('action').textContent = d.recommendation;
+        document.getElementById('latency').textContent = `Response time: ${d.latency_seconds}s`;
+
+        // SHAP bars
+        const maxImpact = Math.max(...d.top_reasons.map(r => Math.abs(r.impact)));
+        const barsHtml  = d.top_reasons.map(r => {
+          const pct  = (Math.abs(r.impact) / maxImpact * 100).toFixed(1);
+          const cls  = r.direction.includes('increases') ? 'bar-risk' : 'bar-safe';
+          const sign = r.direction.includes('increases') ? '▲ risk' : '▼ risk';
+          return `
+            <div class="shap-row">
+              <div class="shap-label">
+                <span class="fname">${r.feature}</span>
+                <span class="fvalue">${sign} (${r.impact > 0 ? '+' : ''}${r.impact})</span>
+              </div>
+              <div class="bar-bg">
+                <div class="bar-fill ${cls}" style="width:${pct}%"></div>
+              </div>
+            </div>`;
+        }).join('');
+
+        document.getElementById('shap-bars').innerHTML = barsHtml;
+
       } catch(e) {
         alert('Error connecting to server. Is it running?');
       }
