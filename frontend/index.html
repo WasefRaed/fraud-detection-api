@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-1BM76Z5DX0"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-1BM76Z5DX0');
+  </script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Fraud Detection System</title>
@@ -184,6 +193,13 @@
           body: JSON.stringify({ Time: time, Amount: amount, ...v })
         });
         const d = await res.json();
+
+        // Track prediction event in Google Analytics
+        gtag('event', 'analyze_transaction', {
+          'event_category': 'Prediction',
+          'event_label': d.risk_level,
+          'value': d.fraud_probability
+        });
 
         // Result card
         const card = document.getElementById('result');
